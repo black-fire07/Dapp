@@ -6,12 +6,13 @@ class BuyForm extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      output: '0'
+      output: '0',
+      yn:'0'
     }
   }
 
   render() {
-    console.log(this.props.yuvanBalance)
+    // console.log(this.props.yuvanBalance)
     return (
       <>
       <form className="mb-3" onSubmit={(event) => {
@@ -31,12 +32,13 @@ class BuyForm extends Component {
           <input
             type="text"
             onChange={(event) => {
-              const etherAmount = this.input.value.toString()
+              const etherAmount = event.target.value.toString()
               this.setState({
                 output: etherAmount * 100
               })
+              // console.log(this.state.output,etherAmount)
             }}
-            ref={(input) => { this.input = input }}
+            // ref={(input) => { this.input = input }}
             className="form-control form-control-lg"
             placeholder="0"
             required />
@@ -75,6 +77,15 @@ class BuyForm extends Component {
         </div>
         <button type="submit" className="btn btn-primary btn-block btn-lg">SWAP!</button>
       </form>
+
+
+
+
+
+
+
+
+
       <form className="mb-3" onSubmit={(event) => {
           event.preventDefault()
           let amount
@@ -82,6 +93,33 @@ class BuyForm extends Component {
           amount = window.web3.utils.toWei(amount, 'Ether')
           this.props.buyyuvan(amount)
         }}>
+        <div>
+          <label className="float-left"><b>Input</b></label>
+          <span className="float-right text-muted">
+            Balance: {window.web3.utils.fromWei(this.props.tokenBalance, 'Ether')}
+          </span>
+        </div>
+        <div className="input-group mb-4">
+          <input
+            type="text"
+            onChange={(event) => {
+              const amnt = this.input.value.toString()
+              this.setState({
+                yn: amnt
+              })
+            }}
+            ref={(input) => { this.input = input }}
+            className="form-control form-control-lg"
+            placeholder="0"
+            required />
+          <div className="input-group-append">
+            <div className="input-group-text">
+              <img src={ethLogo} height='32' alt=""/>
+              &nbsp;&nbsp;&nbsp; Token
+            </div>
+          </div>
+        </div>
+        
         <div>
           <label className="float-left"><b>Yuvan</b></label>
           <span className="float-right text-muted">
@@ -92,10 +130,10 @@ class BuyForm extends Component {
             type="text"
             className="form-control form-control-lg"
             placeholder="0"
-            value={this.state.output}
+            value={this.state.yn}
             disabled
           />
-          <button type="submit" className="btn btn-primary btn-block btn-lg">SWAP!</button>
+          <button type="submit" className="btn btn-primary btn-block btn-lg">Buy YUVAN</button>
         </form>
         </>
     );

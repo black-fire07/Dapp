@@ -28,8 +28,10 @@ class App extends Component {
       loading: true,
       address: '',
       add:'',
-      highest:0,
-      highestbidder: ''
+      highest:"0",
+      highestbidder: '',
+      highest1:"0",
+      highestbidder1: ''
     }
   }
 
@@ -77,16 +79,24 @@ class App extends Component {
       this.setState({ nft })
       this.setState({ token })
       this.setState({ auction })
-      let highest = await auction.methods.highestBid.call().call()
+      let highest = await auction.methods.gethigh(0).call();
       this.setState({ highest: window.web3.utils.fromWei(highest, 'Ether')})
+      let high = await auction.methods.gethighB(0).call();
+      this.setState({highestbidder:high})
+
+      let highest1 = await auction.methods.gethigh(1).call();
+      this.setState({ highest1: window.web3.utils.fromWei(highest1, 'Ether')})
+      let high1 = await auction.methods.gethighB(1).call();
+      this.setState({highestbidder1:high1})
+      // 
       // token.balanceOf.call("0xa40644BEE5907f06a43E6f97cDEd680c15Fc6824").thenthis.setState({tokenBalance: })
       let tokenBalance = await token.methods.balanceOf(this.state.account).call()
       this.setState({ tokenBalance: tokenBalance.toString() })
       let yuvanBalance = await yuvan.methods.balanceOf(this.state.account).call()
       this.setState({ yuvanBalance: yuvanBalance.toString() })
-      let high = await auction.methods.highBidder.call().call()
+      // let high = await auction.methods.highBidder.call().call()
       // this.setState({ highestbidder: high })
-      console.log(high)
+      // console.log(high)
     } else {
       window.alert('Token contract not deployed to detected network.')
     }
@@ -139,32 +149,46 @@ class App extends Component {
     })
   }
   
-  start = () => {
-    this.state.auction.methods.start().send({from : this.state.account}).on('transactionHash', (hash) => {
+  start = (price,id) => {
+    this.state.auction.methods.start(price,id).send({from : this.state.account}).on('transactionHash', (hash) => {
       this.loadBlockdata();
     })
   }
 
-  withdraw = () => {
-    this.state.auction.methods.withdraw().send({from : this.state.account}).on('transactionHash', (hash) => {
+  withdraw = (id) => {
+    this.state.auction.methods.withdraw(id).send({from : this.state.account}).on('transactionHash', (hash) => {
       this.loadBlockdata();
     })
   }
 
-  bid = (val) => {
+  bid = (id,val) => {
     this.state.yuvan.methods.approve(this.state.add,val).send({from: this.state.account}).on('transactionHash', (hash) => {
-    this.state.auction.methods.bid(val).send({from : this.state.account}).on('transactionHash', (hash) => {
+    this.state.auction.methods.bid(id,val).send({from : this.state.account}).on('transactionHash', (hash) => {
       this.loadBlockdata();
     })
   })
   }
 
   auctionend = (val) => {
-   
+    if(val==0){
+    this.state.nft.methods.transfer(this.state.highestbidder,val).send({from : this.state.account}).on('transactionHash', (hash) => {
+      this.loadBlockdata();
+    })  
     // this.state.yuvan.methods.approve(this.state.add,amount).send({from: this.state.account}).on('transactionHash', (hash) => {
     this.state.auction.methods.auctionEnd(val).send({from : this.state.account}).on('transactionHash', (hash) => {
       this.loadBlockdata();
     })
+  }
+  else{
+    console.log(this.state.highestbidder1)
+    this.state.nft.methods.transfer(this.state.highestbidder1,val).send({from : this.state.account}).on('transactionHash', (hash) => {
+      this.loadBlockdata();
+    })  
+    // this.state.yuvan.methods.approve(this.state.add,amount).send({from: this.state.account}).on('transactionHash', (hash) => {
+    this.state.auction.methods.auctionEnd(val).send({from : this.state.account}).on('transactionHash', (hash) => {
+      this.loadBlockdata();
+    })
+  }
   // })
   }
 
@@ -186,6 +210,7 @@ class App extends Component {
         start = {this.start}
         bid = {this.bid}
         highest = {this.state.highest}
+        highest1 = {this.state.highest1}
         withdraw = {this.withdraw}
         auctionend = {this.auctionend}
       />
@@ -199,7 +224,7 @@ class App extends Component {
             target="_blank"
             rel="noopener noreferrer"
           >
-            Ethswap
+            Test Assignment
           </a>
           <a>{this.state.account}</a>
         </nav>
@@ -207,6 +232,7 @@ class App extends Component {
           <div className="row">
             <main role="main" className="col-lg-12 d-flex text-center">
               {content}
+              <div style={{marginLeft:"80px"}}></div>
               {spot}
             </main>
           </div>

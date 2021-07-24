@@ -17,7 +17,7 @@ module.exports = async function(deployer) {
   await deployer.deploy(EthSwap,token.address,yuvan.address);
   const ethSwap = await EthSwap.deployed();
 
-  await deployer.deploy(Auction,yuvan.address,nft.address);
+  await deployer.deploy(Auction,yuvan.address);
   const auction = await Auction.deployed();
 
   await token.transfer(ethSwap.address,'1000000000000000000000000');

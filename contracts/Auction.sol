@@ -1,70 +1,86 @@
 pragma solidity ^0.8.0;
 
 import "./Yuvan.sol";
-import "./Nft.sol";
 
 contract Auction{
     Yuvan public yuvan;
-    Nft public nft;
-    address public random = 0x59C9cDc74b43e3A4b7F91b56B092c80A1a78dc5A;
+    auction[] public auctions;
     
-    address public beneficiary;
-    
-    constructor(Yuvan _yuvan, Nft _nft) {
+    mapping(uint=>address) public beneficiaryr;
+    constructor(Yuvan _yuvan) {
         yuvan = _yuvan;
-        nft = _nft;
     }
     
     event HighestBidInc(address bidder,uint amount);
     event AuctinEnded(address high,uint amount);
     
     bool st = false;
-
-    mapping(address=>uint) public pendingReturns;
-    address public highBidder;
-    uint public highestBid;
+    struct auction {
+        uint id;
+        uint256 startPrice;
+        address owner;
+        bool active;
+        bool finalized;
+    }
     
-    function start() public {
-        if(st){
-            revert("The fun auction has already been called");
-        }
-        beneficiary = msg.sender;
-        st = true;
+    mapping(uint=>mapping(address=>uint)) public pendingReturns;
+    
+    mapping(uint=>address) public highBidder;
+    mapping(uint=>uint) public highestBid;
+    
+    function gethigh(uint id) public view returns(uint){
+        return highestBid[id];
     }
 
-    function bid( uint _val) public {
-        require(msg.sender != beneficiary,"wa");
-        if(!st){
-            revert("The bid fun has already been called");
-        }
-        if(_val <= highestBid){
+    function gethighB(uint id) public view returns(address){
+        return highBidder[id];
+    }
+
+    function start(uint _price,uint _id) public returns(bool){
+        auction memory newAuction;
+        newAuction.id = _id;
+        newAuction.startPrice = _price;
+        newAuction.owner = msg.sender;
+        newAuction.active = true;
+        newAuction.finalized = false;
+        auctions.push(newAuction);
+        return true;
+    }
+
+    function bid(uint _id,uint _val) public {
+        auction memory myAuction = auctions[_id];
+        if(myAuction.owner == msg.sender) revert();
+        if(!myAuction.active) revert();
+        if(_val <= highestBid[_id]){
             revert("lower bid");
         }
         yuvan.approve(address(this), _val);
         yuvan.transferFrom( msg.sender,address(this), _val);
-        highBidder = msg.sender;
-        highestBid = _val;
+        pendingReturns[_id][highBidder[_id]] += highestBid[_id];
+        highBidder[_id] = msg.sender;
+        highestBid[_id] = _val;
         
-        if(highestBid > 0){
-            pendingReturns[highBidder] += highestBid;
-        }
         
         emit HighestBidInc(msg.sender,_val);
     }
     
-    function withdraw() public {
-        require(msg.sender!=highBidder);
-        require(pendingReturns[msg.sender] > 0);
-        uint amount = pendingReturns[msg.sender];
-        pendingReturns[msg.sender] = 0;
+    function withdraw(uint _retid) public {
+        
+        require(msg.sender!=highBidder[_retid]);
+        require(pendingReturns[_retid][msg.sender] > 0);
+        uint amount = pendingReturns[_retid][msg.sender];
+        pendingReturns[_retid][msg.sender] = 0;
         yuvan.transfer(msg.sender, amount);
     }
     
-    function auctionEnd(uint _tokenId) public {
-        require(msg.sender == beneficiary,"wa");
-        nft.transfer(highBidder, _tokenId);
-        // yuvan.transfer(msg.sender, highestBid);
-        st = false;
-        emit AuctinEnded(highBidder,highestBid);
+    function auctionEnd(uint _id) public {
+        auction memory myAuction = auctions[_id];
+        require(msg.sender == myAuction.owner,"wa");
+        // nft.transfer(highBidder, _tokenId);
+        yuvan.transfer(msg.sender, highestBid[_id]);
+        myAuction.active = false;
+        highestBid[_id] = 0;
+        myAuction.finalized = true;
+        emit AuctinEnded(highBidder[_id],highestBid[_id]);
     }
 }
