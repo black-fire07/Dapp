@@ -28,7 +28,8 @@ class App extends Component {
       loading: true,
       address: '',
       add:'',
-      highest:0
+      highest:0,
+      highestbidder: ''
     }
   }
 
@@ -36,12 +37,8 @@ class App extends Component {
     await this.loadWeb3()
     // console.log(window.web3);
     await this.loadBlockdata()
-    await this.spot();
   }
 
-  async spot(){
-    
-  }
   
   async loadWeb3(){
     if(window.ethereum) {
@@ -87,7 +84,9 @@ class App extends Component {
       this.setState({ tokenBalance: tokenBalance.toString() })
       let yuvanBalance = await yuvan.methods.balanceOf(this.state.account).call()
       this.setState({ yuvanBalance: yuvanBalance.toString() })
-      console.log(this.state.yuvanBalance)
+      let high = await auction.methods.highBidder.call().call()
+      // this.setState({ highestbidder: high })
+      console.log(high)
     } else {
       window.alert('Token contract not deployed to detected network.')
     }

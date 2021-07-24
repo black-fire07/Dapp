@@ -3,8 +3,9 @@ import { Credentials } from './Credentials';
 import axios from 'axios';
 
 const App = (props) => {
-    console.log("hello")
+    // console.log("hello")
 
+    
   const spotify = Credentials();  
   const [token, setToken] = useState('');  
   const [genres, setGenres] = useState({selectedGenre: '', listOfGenresFromAPI: []});
@@ -29,13 +30,13 @@ const App = (props) => {
       })
       .then (genreResponse => {        
             setGenres({listOfGenresFromAPI:genreResponse.data.tracks})
-        console.log(genreResponse.data.tracks)
+        // console.log(genreResponse.data.tracks)
       });
       
     });
   }, [genres.selectedGenre, spotify.ClientId, spotify.ClientSecret]); 
 
- console.log("yo")
+//  console.log("yo")
 const [val,setval] = useState("0");
 const [tid,settid] = useState("0");
   
@@ -68,7 +69,7 @@ const [tid,settid] = useState("0");
                 }}
               />
               <button className="btn btn-primary btn-block btn-lg" onClick={()=>{let amount
-          console.log(val)
+          // console.log(val)
           amount = val.toString()
           amount = window.web3.utils.toWei(amount, 'Ether')
           props.bid(amount)}}>bid</button>
